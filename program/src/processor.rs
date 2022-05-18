@@ -27,8 +27,6 @@ pub fn process_instruction(
   const ACCOUNT_DATA_LEN: usize = 1;
 
   let instruction = WhitelistInstruction::try_from_slice(input)?;
-  msg!("instruction: {:?}", instruction);
-  msg!("input: {:?}", input);
   let accounts_iter = &mut accounts.iter();
 
   let funding_account = next_account_info(accounts_iter)?;
