@@ -13,22 +13,13 @@ const BufferLayout = require("@solana/buffer-layout");
 
 const PAYER_KEYPAIR = Keypair.generate();
 
-(async () => {
-  const connection = new Connection('http://127.0.0.1:8899', 'confirmed');
-  const programId = new PublicKey(
-    '8oWgidXhTxwt5Y5e867cj5L1ogfbx2vFpXYtpJd2naGs'
-  );
+const connection = new Connection('http://127.0.0.1:8899', 'confirmed');
+const programId = new PublicKey(
+  '8oWgidXhTxwt5Y5e867cj5L1ogfbx2vFpXYtpJd2naGs'
+);
 
-  // Airdop to Payer
-  await connection.confirmTransaction(
-    await connection.requestAirdrop(PAYER_KEYPAIR.publicKey, LAMPORTS_PER_SOL)
-  );
+const createList = async (pda: PublicKey) => {
 
-  const [pda, bump] = await PublicKey.findProgramAddress(
-    [Buffer.from('customaddress'), PAYER_KEYPAIR.publicKey.toBuffer()],
-    programId
-  );
-  
   let initializeStruct = BufferLayout.struct([BufferLayout.u8('instruction')]);
   const data = Buffer.alloc(initializeStruct.span);
 
@@ -64,9 +55,10 @@ const PAYER_KEYPAIR = Keypair.generate();
   const transaction = new Transaction();
   transaction.add(createPDAIx);
 
-  const txHash = await sendAndConfirmTransaction(connection, transaction, [PAYER_KEYPAIR]);
-  console.log(`Created PDA successfully. Tx Hash: ${txHash}`);
+  return sendAndConfirmTransaction(connection, transaction, [PAYER_KEYPAIR]);
+}
 
+const addPubkey = async (pda: PublicKey, key: PublicKey) => {
   const publicKey = (property: string = 'publicKey'): Object => {
     return BufferLayout.blob(32, property);
   };
@@ -77,7 +69,7 @@ const PAYER_KEYPAIR = Keypair.generate();
   addPubkeyStruct.encode(
     {
       instruction: 1,
-      key: publicKey(PAYER_KEYPAIR.publicKey.toBase58()),
+      key: publicKey(key.toBase58()),
     },
     pubkeyData,
   );
@@ -109,4 +101,25 @@ const PAYER_KEYPAIR = Keypair.generate();
 
   const addPubkeyTxHash = await sendAndConfirmTransaction(connection, addPubkeyTx, [PAYER_KEYPAIR]);
   console.log(`Added Payer to PDA successfully. Tx Hash: ${addPubkeyTxHash}`);
+}
+
+(async () => {
+  // Airdop to Payer
+  await connection.confirmTransaction(
+    await connection.requestAirdrop(PAYER_KEYPAIR.publicKey, LAMPORTS_PER_SOL)
+  );
+
+  const [pda, bump] = await PublicKey.findProgramAddress(
+    [Buffer.from('customaddress'), PAYER_KEYPAIR.publicKey.toBuffer()],
+    programId
+  );
+
+  const pdaTxHash = await createList(pda);
+  console.log(`Created PDA successfully. Tx Hash: ${pdaTxHash}`);
+
+  const addKeyTxHash = await addPubkey(pda, Keypair.generate().publicKey);
+  console.log(`Added key successfully. Tx Hash: ${addKeyTxHash}`);
+
 })();
+
+
