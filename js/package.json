@@ -1,0 +1,26 @@
+{
+  "name": "solana-web3-reference",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc -p .",
+    "test": "yarn run build && node src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cryptogosu/solana-web3-reference.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cryptogosu/solana-web3-reference/issues"
+  },
+  "homepage": "https://github.com/cryptogosu/solana-web3-reference#readme",
+  "dependencies": {
+    "@solana/buffer-layout": "^4.0.0",
+    "@solana/web3.js": "^1.42.0",
+    "typescript": "^4.4.3"
+  }
+}
