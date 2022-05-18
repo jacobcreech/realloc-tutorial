@@ -63,7 +63,7 @@ const addPubkey = async (pda: PublicKey, key: PublicKey) => {
     return BufferLayout.blob(32, property);
   };
 
-  let addPubkeyStruct = BufferLayout.struct([BufferLayout.u8('instruction')], publicKey('key'));
+  let addPubkeyStruct = BufferLayout.struct([BufferLayout.u8('instruction'), publicKey('key')]);
   const pubkeyData = Buffer.alloc(addPubkeyStruct.span);
 
   addPubkeyStruct.encode(
@@ -73,6 +73,8 @@ const addPubkey = async (pda: PublicKey, key: PublicKey) => {
     },
     pubkeyData,
   );
+
+  console.log(pubkeyData);
 
   const addPubkeyIx = new TransactionInstruction({
     programId: programId,
