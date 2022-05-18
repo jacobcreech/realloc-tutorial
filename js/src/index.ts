@@ -69,7 +69,7 @@ const addPubkey = async (pda: PublicKey, key: PublicKey) => {
   addPubkeyStruct.encode(
     {
       instruction: 1,
-      key: publicKey(key.toBase58()),
+      key: key.toBuffer(),
     },
     pubkeyData,
   );
@@ -109,10 +109,12 @@ const addPubkey = async (pda: PublicKey, key: PublicKey) => {
     await connection.requestAirdrop(PAYER_KEYPAIR.publicKey, LAMPORTS_PER_SOL)
   );
 
-  const [pda, bump] = await PublicKey.findProgramAddress(
+  const [pda] = await PublicKey.findProgramAddress(
     [Buffer.from('customaddress'), PAYER_KEYPAIR.publicKey.toBuffer()],
     programId
   );
+
+  console.log(pda.toBase58());
 
   const pdaTxHash = await createList(pda);
   console.log(`Created PDA successfully. Tx Hash: ${pdaTxHash}`);
