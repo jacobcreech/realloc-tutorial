@@ -24,7 +24,8 @@ pub fn process_instruction(
   accounts: &[AccountInfo],
   input: &[u8],
 ) -> ProgramResult {
-  const ACCOUNT_DATA_LEN: usize = std::mem::size_of::<WhiteListData>() + 1;
+  // Length = BOOL + VEC + Pubkey * n (n = number of keys)
+  const INITIAL_ACCOUNT_LEN: usize = 1 + 4 + 0 ;
   msg!("input: {:?}", input);
 
   let instruction = WhitelistInstruction::try_from_slice(input)?;
@@ -57,12 +58,12 @@ pub fn process_instruction(
           return Err(ProgramError::InvalidAccountData);
       }
 
-      let lamports_required = Rent::get()?.minimum_balance(ACCOUNT_DATA_LEN);
+      let lamports_required = Rent::get()?.minimum_balance(INITIAL_ACCOUNT_LEN);
       let create_pda_account_ix = system_instruction::create_account(
           &funding_account.key,
           &pda_account.key,
           lamports_required,
-          ACCOUNT_DATA_LEN.try_into().unwrap(),
+          INITIAL_ACCOUNT_LEN.try_into().unwrap(),
           &_program_id,
       );
 
@@ -75,37 +76,22 @@ pub fn process_instruction(
           ],
           &[signers_seeds],
       )?;
-      msg!("before");
-      msg!("pda_account: {:?}", &pda_account);
-      msg!("pda_account: {:?}", &pda_account.data);
-      let deserialization = || -> Result<(), ProgramError> {
-          let mut pda_account_state = WhiteListData::try_from_slice(&pda_account.data.borrow())?;
-          msg!("data: {:?}", &pda_account_state);
-          Ok(())
-      };
-      if let Err(_err) = deserialization() {
-        msg!("deserialization error: {:?}", _err);
-      }
+      
       let mut pda_account_state = WhiteListData::try_from_slice(&pda_account.data.borrow())?;
-      msg!("after");
 
       pda_account_state.is_initialized = true;
-      msg!("before vec");
       pda_account_state.white_list = Vec::new();
       pda_account_state.serialize(&mut &mut pda_account.data.borrow_mut()[..])?;
       Ok(())
     }
     WhitelistInstruction::AddKey { key } => {
       msg!("AddKey");
-      msg!("pda account: {:?}", pda_account);
-      msg!("pda account data: {:?}", pda_account.data);
 
       let mut pda_account_state = WhiteListData::try_from_slice(&pda_account.data.borrow())?;
-      msg!("After deserialize");
+      
       if !pda_account_state.is_initialized {
           return Err(ProgramError::InvalidAccountData);
       }
-      msg!("After is_initialized");
 
       let new_size = pda_account.data.borrow().len() + 32;
 

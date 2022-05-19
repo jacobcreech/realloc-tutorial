@@ -74,8 +74,6 @@ const addPubkey = async (pda: PublicKey, key: PublicKey) => {
     pubkeyData,
   );
 
-  console.log(pubkeyData);
-
   const addPubkeyIx = new TransactionInstruction({
     programId: programId,
     data: pubkeyData,
@@ -101,8 +99,7 @@ const addPubkey = async (pda: PublicKey, key: PublicKey) => {
   const addPubkeyTx = new Transaction();
   addPubkeyTx.add(addPubkeyIx);
 
-  const addPubkeyTxHash = await sendAndConfirmTransaction(connection, addPubkeyTx, [PAYER_KEYPAIR]);
-  console.log(`Added Payer to PDA successfully. Tx Hash: ${addPubkeyTxHash}`);
+  return sendAndConfirmTransaction(connection, addPubkeyTx, [PAYER_KEYPAIR]);
 }
 
 (async () => {
@@ -121,9 +118,14 @@ const addPubkey = async (pda: PublicKey, key: PublicKey) => {
   const pdaTxHash = await createList(pda);
   console.log(`Created PDA successfully. Tx Hash: ${pdaTxHash}`);
 
+  const initialAccountInfo = await connection.getAccountInfo(pda);
+  console.log(initialAccountInfo?.data.length);
+
   const addKeyTxHash = await addPubkey(pda, Keypair.generate().publicKey);
   console.log(`Added key successfully. Tx Hash: ${addKeyTxHash}`);
 
+  const finalAccountInfo = await connection.getAccountInfo(pda);
+  console.log(finalAccountInfo?.data.length);
 })();
 
 
