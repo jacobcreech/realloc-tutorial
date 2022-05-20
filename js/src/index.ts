@@ -113,19 +113,19 @@ const addPubkey = async (pda: PublicKey, key: PublicKey) => {
     programId
   );
 
-  console.log(pda.toBase58());
+  console.log(`PDA: ${pda.toBase58()}`);
 
   const pdaTxHash = await createList(pda);
   console.log(`Created PDA successfully. Tx Hash: ${pdaTxHash}`);
 
   const initialAccountInfo = await connection.getAccountInfo(pda);
-  console.log(initialAccountInfo?.data.length);
+  console.log(`Initial Account length: ${initialAccountInfo?.data.length}`);
 
   const addKeyTxHash = await addPubkey(pda, Keypair.generate().publicKey);
   console.log(`Added key successfully. Tx Hash: ${addKeyTxHash}`);
 
   const finalAccountInfo = await connection.getAccountInfo(pda);
-  console.log(finalAccountInfo?.data.length);
+  console.log(`Final Account length: ${finalAccountInfo?.data.length}`);
 })();
 
 
